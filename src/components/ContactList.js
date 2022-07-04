@@ -253,7 +253,12 @@ class ContactList extends Component {
                         {this.state.tableHeader}
                     </tr>
                     </thead>
-                    <tbody>{this.state.tableTr}</tbody>
+                    <tbody>
+                    {this.state.tableTr == 0 && (
+                        <tr><td colSpan="6" className="no-record">No record in local storage</td></tr>
+                    )}
+                    {this.state.tableTr}
+                    </tbody>
                 </table>
             </>
         );
