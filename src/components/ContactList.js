@@ -14,11 +14,10 @@ class ContactList extends Component {
     constructor(props) {
         super(props)
 
-        let index = 1;
-        const tableTrDataRender = this.getContactStorage().map(d => {
+        const tableTrDataRender = this.getContactStorage().map((d, index) => {
                 return (
-                    <tr>
-                        <td>{index++}</td>
+                    <tr key={index}>
+                        <td>{++index}</td>
                         <td>{d.name}</td>
                         <td>{d.phone}</td>
                         <td>{d.email}</td>
@@ -34,7 +33,7 @@ class ContactList extends Component {
 
         const tableColumns = ['#', 'Name', 'Phone', 'Email', 'Date', '']
         const tableColumnsRender = tableColumns.map(tableColum => {
-                return (<th>{tableColum}</th>)
+                return (<th key={tableColum}>{tableColum}</th>)
             }
         )
 
@@ -55,7 +54,7 @@ class ContactList extends Component {
 
     }
 
-    eventHandler = e => this.setState({ [e.target.id]: e.target.value });
+    eventHandler = (event) => this.setState({ [event.target.id]: event.target.value });
 
     editInfo = (id) => {
         let contact = this.getDataById(id)
@@ -147,7 +146,7 @@ class ContactList extends Component {
     createContact = () => {
         let contacts = this.getContactStorage();
         const data = {
-            id: contacts.length + 1,
+            id: this.findMaxId() + 1,
             name: this.state.name,
             phone: this.state.phone,
             email: this.state.email,
@@ -199,6 +198,14 @@ class ContactList extends Component {
             ('00' + date.getMinutes()).slice(-2);
     }
 
+    findMaxId = () => {
+        const ids = this.getContactStorage().map(object => {
+            return object.id;
+        });
+
+        return ids.length == 0 ? 0 : Math.max(...ids);
+    }
+
     render() {
         const { errors } = this.state;
         return (
@@ -240,7 +247,7 @@ class ContactList extends Component {
                         <input type="hidden" name="index" id="index" value={this.state.id}/>
                     </form>
                 </div>
-                <table id="list-info" className="list-info">
+                <table className="list-info">
                     <thead>
                     <tr>
                         {this.state.tableHeader}
