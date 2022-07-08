@@ -88,18 +88,18 @@ class ContactList extends Component {
     }
 
     validationRequiredFields = (fields, errors) => {
-        fields.map(field => {
+        fields.forEach(field => {
             let inputValue = document.getElementById(field).value.trim();
             if (inputValue.length === 0) {
                 errors[field] = `Field ${field} is required!`;
             }
-        })
+        });
     }
 
     validationValidFields = (fields, errors) => {
         const regExp = RegExp(/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/);
         const rePhone = /^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/;
-        fields.map(field => {
+        fields.forEach(field => {
             let inputValue = document.getElementById(field).value.trim();
             if (inputValue.length > 0) {
                 if (field === 'email' && !regExp.test(inputValue)) {
@@ -109,25 +109,24 @@ class ContactList extends Component {
                     errors[field] = `Field ${field} is invalid!`;
                 }
             }
-        })
+        });
     }
 
     validationExistValues = (fields, errors) => {
-        const id = this.state.id;
-        fields.map(field => {
+        fields.forEach(field => {
             let inputValue = document.getElementById(field).value.trim();
             if (inputValue.length > 0) {
                 let contacts = getContactStorage();
                 if (field === 'email'
-                    && contacts.filter(el => el.email === inputValue && el.id !== id).length > 0) {
+                    && contacts.filter(el => el.email === inputValue && el.id !== this.state.id).length > 0) {
                     errors[field] = `${inputValue} is already exist!`;
                 }
                 if (field === 'phone'
-                    && contacts.filter(el => el.phone === inputValue && el.id !== id).length > 0) {
+                    && contacts.filter(el => el.phone === inputValue && el.id !== this.state.id).length > 0) {
                     errors[field] = `${inputValue} is already exist!`;
                 }
             }
-        })
+        });
     }
 
     createContact = () => {
@@ -166,7 +165,7 @@ class ContactList extends Component {
         let email = getDataById(id).email;
         const result = await confirm(`Are you sure to delete email: ${email}?`)
         if (result) {
-            let filtered = getContactStorage().filter(function(el) { return el.id != id; });
+            let filtered = getContactStorage().filter(function(el) { return el.id !== id; });
             localStorage.setItem(contactStore, JSON.stringify(filtered));
         }
         window.location.reload();
