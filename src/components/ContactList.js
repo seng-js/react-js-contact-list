@@ -1,42 +1,10 @@
 import {Component} from "react";
+import {contactStore, getContactStorage, getCurrentDate, getDataById, findMaxId} from "../util/";
 import {confirm} from "react-confirm-box";
 
 class ContactList extends Component {
-    contactStore = 'contact-info';
-    getContactStorage = () => {
-        if (localStorage.getItem(this.contactStore) != null) {
-            return JSON.parse(localStorage.getItem(this.contactStore));
-        }
-
-        return [];
-    }
-
     constructor(props) {
         super(props)
-
-        const tableTrDataRender = this.getContactStorage().map((d, index) => {
-                return (
-                    <tr key={index}>
-                        <td>{++index}</td>
-                        <td>{d.name}</td>
-                        <td>{d.phone}</td>
-                        <td>{d.email}</td>
-                        <td>{d.date}</td>
-                        <td>
-                            <button className="btn-success" onClick={() => this.editInfo(d.id)}>Edit</button>
-                            <button className="btn-danger" onClick={() => this.deleteInfo(d.id)} >Delete</button>
-                        </td>
-                    </tr>
-                )
-            }
-        )
-
-        const tableColumns = ['#', 'Name', 'Phone', 'Email', 'Date', '']
-        const tableColumnsRender = tableColumns.map(tableColum => {
-                return (<th key={tableColum}>{tableColum}</th>)
-            }
-        )
-
         this.state = {
             id: '',
             name: '',
@@ -48,16 +16,36 @@ class ContactList extends Component {
                 phone: '',
                 email: ''
             },
-            tableHeader: tableColumnsRender,
-            tableTr: tableTrDataRender
         }
-
     }
+
+    tableTrDataRender = getContactStorage().map((data, index) => {
+            return (
+                <tr key={index}>
+                    <td>{++index}</td>
+                    <td>{data.name}</td>
+                    <td>{data.phone}</td>
+                    <td>{data.email}</td>
+                    <td>{data.date}</td>
+                    <td>
+                        <button className="btn-success" onClick={() => this.editInfo(data.id)}>Edit</button>
+                        <button className="btn-danger" onClick={() => this.deleteInfo(data.id)} >Delete</button>
+                    </td>
+                </tr>
+            )
+        }
+    )
+
+    tableColumns = ['#', 'Name', 'Phone', 'Email', 'Date', '']
+    tableColumnsRender = this.tableColumns.map(tableColum => {
+            return (<th key={tableColum}>{tableColum}</th>)
+        }
+    )
 
     eventHandler = (event) => this.setState({ [event.target.id]: event.target.value });
 
     editInfo = (id) => {
-        let contact = this.getDataById(id)
+        let contact = getDataById(id)
         this.setState({
             id: contact.id,
             name: contact.name,
@@ -75,7 +63,6 @@ class ContactList extends Component {
     saveInfo = (event) => {
         event.preventDefault();
         let errors = { ...this.state.errors };
-
         errors.name = '';
         errors.phone = '';
         errors.email = '';
@@ -84,10 +71,10 @@ class ContactList extends Component {
         this.validationValidFields(['phone', 'email'], errors)
         this.validationExistValues(['phone', 'email'], errors);
 
-        if (errors.name.length == 0
-            && errors.phone.length == 0
-            && errors.email.length == 0) {
-            if (this.state.action == 'Update') {
+        if (errors.name.length === 0
+            && errors.phone.length === 0
+            && errors.email.length === 0) {
+            if (this.state.action === 'Update') {
                 this.updateContact();
             } else {
                 this.createContact();
@@ -103,7 +90,7 @@ class ContactList extends Component {
     validationRequiredFields = (fields, errors) => {
         fields.map(field => {
             let inputValue = document.getElementById(field).value.trim();
-            if (inputValue.length == 0) {
+            if (inputValue.length === 0) {
                 errors[field] = `Field ${field} is required!`;
             }
         })
@@ -115,10 +102,10 @@ class ContactList extends Component {
         fields.map(field => {
             let inputValue = document.getElementById(field).value.trim();
             if (inputValue.length > 0) {
-                if (field == 'email' && !regExp.test(inputValue)) {
+                if (field === 'email' && !regExp.test(inputValue)) {
                     errors[field] = `Field ${field} is invalid!`;
                 }
-                if (field == 'phone' && !rePhone.test(inputValue)) {
+                if (field === 'phone' && !rePhone.test(inputValue)) {
                     errors[field] = `Field ${field} is invalid!`;
                 }
             }
@@ -130,13 +117,13 @@ class ContactList extends Component {
         fields.map(field => {
             let inputValue = document.getElementById(field).value.trim();
             if (inputValue.length > 0) {
-                let contacts = this.getContactStorage();
-                if (field == 'email'
-                    && contacts.filter(el => el.email == inputValue && el.id !== id).length > 0) {
+                let contacts = getContactStorage();
+                if (field === 'email'
+                    && contacts.filter(el => el.email === inputValue && el.id !== id).length > 0) {
                     errors[field] = `${inputValue} is already exist!`;
                 }
-                if (field == 'phone'
-                    && contacts.filter(el => el.phone == inputValue && el.id !== id).length > 0) {
+                if (field === 'phone'
+                    && contacts.filter(el => el.phone === inputValue && el.id !== id).length > 0) {
                     errors[field] = `${inputValue} is already exist!`;
                 }
             }
@@ -144,20 +131,20 @@ class ContactList extends Component {
     }
 
     createContact = () => {
-        let contacts = this.getContactStorage();
+        let contacts = getContactStorage();
         const data = {
-            id: this.findMaxId() + 1,
+            id: findMaxId() + 1,
             name: this.state.name,
             phone: this.state.phone,
             email: this.state.email,
-            date: this.getCurrentDate()
+            date: getCurrentDate()
         };
         contacts.push(data)
-        localStorage.setItem(this.contactStore, JSON.stringify(contacts));
+        localStorage.setItem(contactStore, JSON.stringify(contacts));
     }
 
     updateContact = () => {
-        let contacts = this.getContactStorage();
+        let contacts = getContactStorage();
         contacts.map((contact, index) => {
             if (contact.id === this.state.id){
                 contacts[index] = {
@@ -165,49 +152,28 @@ class ContactList extends Component {
                     name: this.state.name,
                     phone: this.state.phone,
                     email: this.state.email,
-                    date: this.getCurrentDate()
+                    date: getCurrentDate()
                 };
             }
 
             return contact
         })
 
-        localStorage.setItem(this.contactStore, JSON.stringify(contacts));
+        localStorage.setItem(contactStore, JSON.stringify(contacts));
     }
 
     deleteInfo = async (id) => {
-        let email = this.getDataById(id).email;
+        let email = getDataById(id).email;
         const result = await confirm(`Are you sure to delete email: ${email}?`)
         if (result) {
-            let filtered = this.getContactStorage().filter(function(el) { return el.id != id; });
-            localStorage.setItem(this.contactStore, JSON.stringify(filtered));
+            let filtered = getContactStorage().filter(function(el) { return el.id != id; });
+            localStorage.setItem(contactStore, JSON.stringify(filtered));
         }
         window.location.reload();
     }
 
-    getDataById = (id) => {
-        return this.getContactStorage().filter(el => el.id === id)[0];
-    }
-
-    getCurrentDate = () => {
-        let date = new Date();
-        return date.getFullYear() + '/' +
-            ('00' + (date.getMonth() + 1)).slice(-2) + '/' +
-            ('00' + date.getDate()).slice(-2) + ' ' +
-            ('00' + date.getHours()).slice(-2) + ':' +
-            ('00' + date.getMinutes()).slice(-2);
-    }
-
-    findMaxId = () => {
-        const ids = this.getContactStorage().map(object => {
-            return object.id;
-        });
-
-        return ids.length == 0 ? 0 : Math.max(...ids);
-    }
-
     render() {
-        const { errors } = this.state;
+        const { errors, id, name, phone, email, action } = this.state;
         return (
             <>
                 <div className="wrapper">
@@ -215,7 +181,7 @@ class ContactList extends Component {
                         <div className={errors.name.length > 0 ? "form-control error" : "form-control"}>
                             <input type="text" id="name"
                                    name="name"
-                                   value={this.state.name}
+                                   value={name}
                                    placeholder="Name"
                                    onChange={this.eventHandler} />
                             {errors.name.length > 0 && (
@@ -225,7 +191,7 @@ class ContactList extends Component {
                         <div  className={errors.phone.length > 0 ? "form-control error" : "form-control"}>
                             <input type="phone" id="phone"
                                    placeholder="(123) 456-7890"
-                                   value={this.state.phone}
+                                   value={phone}
                                    onChange={this.eventHandler} />
                             {errors.phone.length > 0 && (
                                 <small>{errors.phone}</small>
@@ -234,30 +200,30 @@ class ContactList extends Component {
                         <div  className={errors.email.length > 0 ? "form-control error" : "form-control"}>
                             <input type="text" id="email"
                                    placeholder="jonh@example.com"
-                                   value={this.state.email}
+                                   value={email}
                                    onChange={this.eventHandler} />
                             {errors.email.length > 0 && (
                                 <small>{errors.email}</small>
                             )}
                         </div>
-                        {this.state.action == 'Update' && (
+                        {action === 'Update' && (
                             <a href="/" className="btn-info">Cancel</a>
                         )}
-                        <button type="submit" className="btn-success" onClick={this.saveInfo} value="Save" id="submit">{this.state.action}</button>
-                        <input type="hidden" name="index" id="index" value={this.state.id}/>
+                        <button type="submit" className="btn-success" onClick={this.saveInfo} value="Save" id="submit">{action}</button>
+                        <input type="hidden" name="index" id="index" value={id}/>
                     </form>
                 </div>
                 <table className="list-info">
                     <thead>
                     <tr>
-                        {this.state.tableHeader}
+                        {this.tableColumnsRender}
                     </tr>
                     </thead>
                     <tbody>
-                    {this.state.tableTr == 0 && (
+                    {this.tableTrDataRender.length === 0 && (
                         <tr><td colSpan="6" className="no-record">No record in local storage</td></tr>
                     )}
-                    {this.state.tableTr}
+                    {this.tableTrDataRender}
                     </tbody>
                 </table>
             </>
